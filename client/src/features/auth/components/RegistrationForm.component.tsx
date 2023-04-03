@@ -1,4 +1,4 @@
-import React, { FC, FormEvent } from "react";
+import React, { FC, FormEvent, useEffect } from "react";
 
 import {
 	Box,
@@ -8,16 +8,21 @@ import {
 	Typography,
 	Button,
 	Divider,
+	CircularProgress,
 } from "@mui/material";
-import { Link } from "react-router-dom";
-import useInput from "../../../hooks/use-input";
-import { validateNameLength, validatePasswordLength } from "../../../shared/utils/validation/length";
+import { Link, useNavigate } from "react-router-dom";
+import useInput from "../../../hooks/input/use-input";
+import {
+	validateNameLength,
+	validatePasswordLength,
+} from "../../../shared/utils/validation/length";
 import { validateEmail } from "../../../shared/utils/validation/email";
 import { NewUser } from "../models/NewUser";
+import { useAppDispatch, useAppSelector } from "../../../hooks/redux/hooks";
+import { register, reset } from "../authSlice";
 
 const RegistrationFormComponent: FC = () => {
-
-	const { 
+	const {
 		text: name,
 		shouldDisplayError: nameHasError,
 		textChangeHandler: nameChangeHandler,
@@ -25,7 +30,7 @@ const RegistrationFormComponent: FC = () => {
 		clearHandler: nameClearHandler,
 	} = useInput(validateNameLength);
 
-	const { 
+	const {
 		text: email,
 		shouldDisplayError: emailHasError,
 		textChangeHandler: emailChangeHandler,
@@ -33,7 +38,7 @@ const RegistrationFormComponent: FC = () => {
 		clearHandler: emailClearHandler,
 	} = useInput(validateEmail);
 
-	const { 
+	const {
 		text: password,
 		shouldDisplayError: passwordHasError,
 		textChangeHandler: passwordChangeHandler,
@@ -41,7 +46,7 @@ const RegistrationFormComponent: FC = () => {
 		clearHandler: passwordClearHandler,
 	} = useInput(validatePasswordLength);
 
-	const { 
+	const {
 		text: confirmPassword,
 		shouldDisplayError: confirmPasswordHasError,
 		textChangeHandler: confirmPasswordChangeHandler,
@@ -54,26 +59,56 @@ const RegistrationFormComponent: FC = () => {
 		emailClearHandler();
 		passwordClearHandler();
 		confirmPasswordClearHandler();
-	}
+	};
+
+	const dispatch = useAppDispatch();
+
+	const { isLoading, isSuccess } = useAppSelector((state) => state.auth);
+
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (isSuccess) {
+			console.log(isSuccess);
+			dispatch(reset());
+			clearForm();
+			navigate("/signin");
+		}
+	}, [isSuccess, dispatch]);
 
 	const onSubmitHandler = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		if (password !== confirmPassword) return;
 
-		if (nameHasError || emailHasError || passwordHasError || confirmPasswordHasError ) return;
+		if (
+			nameHasError ||
+			emailHasError ||
+			passwordHasError ||
+			confirmPasswordHasError
+		)
+			return;
 
-		if (name.length === 0 || email.length === 0 || password.length === 0 || confirmPassword.length === 0) return;
+		if (
+			name.length === 0 ||
+			email.length === 0 ||
+			password.length === 0 ||
+			confirmPassword.length === 0
+		)
+			return;
 
 		const newUser: NewUser = {
-			name, email, password
-		}
+			name,
+			email,
+			password,
+		};
 
-
-		console.log("NEW USER: ", newUser );
-
-		clearForm();
+		dispatch(register(newUser));
+		console.log("click");
 	};
+
+	if (isLoading)
+		return <CircularProgress sx={{ marginTop: "64px" }} color="primary" />;
 
 	return (
 		<Box
@@ -101,7 +136,7 @@ const RegistrationFormComponent: FC = () => {
 						onChange={nameChangeHandler}
 						onBlur={nameBlurHandler}
 						error={nameHasError}
-						helperText={nameHasError ? "Enter Your Name": ""}
+						helperText={nameHasError ? "Enter Your Name" : ""}
 						type="text"
 						name="name"
 						id="name"
@@ -119,7 +154,7 @@ const RegistrationFormComponent: FC = () => {
 						onChange={emailChangeHandler}
 						onBlur={emailBlurHandler}
 						error={emailHasError}
-						helperText={emailHasError ? "Enter your mail": ""}
+						helperText={emailHasError ? "Enter your mail" : ""}
 						type="email"
 						name="email"
 						id="email"
@@ -137,7 +172,11 @@ const RegistrationFormComponent: FC = () => {
 						onChange={passwordChangeHandler}
 						onBlur={passwordBlurHandler}
 						error={passwordHasError}
-						helperText={passwordHasError ? "Minimum 6 characters required": ""}
+						helperText={
+							passwordHasError
+								? "Minimum 6 characters required"
+								: ""
+						}
 						type="password"
 						name="password"
 						id="password"
@@ -155,8 +194,16 @@ const RegistrationFormComponent: FC = () => {
 						value={confirmPassword}
 						onChange={confirmPasswordChangeHandler}
 						onBlur={confirmPasswordBlurHandler}
-						error={confirmPassword.length > 0 && password !== confirmPassword}
-						helperText={confirmPassword.length > 0 && password !== confirmPassword ? "Passwords must match": ""}
+						error={
+							confirmPassword.length > 0 &&
+							password !== confirmPassword
+						}
+						helperText={
+							confirmPassword.length > 0 &&
+							password !== confirmPassword
+								? "Passwords must match"
+								: ""
+						}
 						type="password"
 						name="confirmPassword"
 						id="confirmPassword"

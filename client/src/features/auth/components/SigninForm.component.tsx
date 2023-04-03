@@ -10,7 +10,7 @@ import {
 	Divider,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import useInput from "../../../hooks/use-input";
+import useInput from "../../../hooks/input/use-input";
 import { validateEmail } from "../../../shared/utils/validation/email";
 import { validatePasswordLength } from "../../../shared/utils/validation/length";
 
