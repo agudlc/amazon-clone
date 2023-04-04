@@ -4,6 +4,13 @@ import { Jwt } from "./models/Jwt";
 import { NewUser } from "./models/NewUser";
 import authService from "./services/auth.service";
 import { RootState } from "../../store";
+import { LoginUser } from "./models/LoginUser.interface";
+
+const storedUser: string | null = localStorage.getItem("user");
+const user: DisplayUser | null = storedUser ? JSON.parse(storedUser) : null;
+
+const storedJwt: string | null = localStorage.getItem("jwt");
+const jwt: Jwt = storedJwt ? JSON.parse(storedJwt) : null;
 
 interface AsyncState {
 	isLoading: boolean;
@@ -18,8 +25,8 @@ interface AuthState extends AsyncState {
 }
 
 const initialState: AuthState = {
-	user: null,
-	jwt: null,
+	user: user,
+	jwt: jwt,
 	isAutheticated: false,
 	isLoading: false,
 	isSuccess: false,
@@ -33,6 +40,32 @@ export const register = createAsyncThunk(
 			return await authService.register(user);
 		} catch (error) {
 			return thunkAPI.rejectWithValue("Unable to register!");
+		}
+	}
+);
+
+export const login = createAsyncThunk(
+	"auth/login",
+	async (user: LoginUser, thunkAPI) => {
+		try {
+			return await authService.login(user);
+		} catch (error) {
+			return thunkAPI.rejectWithValue("Unable to login!");
+		}
+	}
+);
+
+export const logout = createAsyncThunk("auth/logout", async () => {
+	await authService.logout();
+});
+
+export const verifyJwt = createAsyncThunk(
+	"auth/verify-jwt",
+	async (jwt: string, thunkAPI) => {
+		try {
+			return await authService.verifyJwt(jwt);
+		} catch (error) {
+			return thunkAPI.rejectWithValue("Unable to verify!");
 		}
 	}
 );
@@ -62,6 +95,42 @@ export const authSlice = createSlice({
 				state.isLoading = false;
 				state.isError = true;
 				state.user = null;
+			})
+			// LOGIN
+			.addCase(login.pending, (state) => {
+				state.isLoading = true;
+			})
+			.addCase(login.fulfilled, (state, action) => {
+				state.isLoading = false;
+				state.isSuccess = true;
+				state.jwt = action.payload;
+				state.isAutheticated = true;
+			})
+			.addCase(login.rejected, (state) => {
+				state.isLoading = false;
+				state.isError = true;
+				state.user = null;
+				state.isAutheticated = false;
+			})
+			// LOGOUT
+			.addCase(logout.fulfilled, (state) => {
+				state.user = null;
+				state.jwt = null;
+				state.isAutheticated = false;
+			})
+			// VERIFY JWT
+			.addCase(verifyJwt.pending, (state) => {
+				state.isLoading = true;
+			})
+			.addCase(verifyJwt.fulfilled, (state, action) => {
+				state.isLoading = false;
+				state.isSuccess = true;
+				state.isAutheticated = action.payload;
+			})
+			.addCase(verifyJwt.rejected, (state) => {
+				state.isLoading = false;
+				state.isError = true;
+				state.isAutheticated = false;
 			});
 	},
 });

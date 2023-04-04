@@ -1,23 +1,34 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React from "react";
+import {
+	BrowserRouter as Router,
+	Routes,
+	Route,
+	Navigate,
+} from "react-router-dom";
 import { ThemeProvider } from "@mui/material";
 
 import { theme } from "./shared/utils/theme";
 import HomePage from "./pages/Home.page";
 import RegisterPage from "./pages/Register.page";
 import SigninPage from "./pages/Signin.page";
+import PrivateRoute from "./features/auth/components/PrivateRoute";
 
 const App = () => {
-  return (
-    <ThemeProvider theme={theme}>
-      <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/signin" element={<SigninPage />} />
-        </Routes>
-      </Router>
-    </ThemeProvider>
-  )
-}
+	return (
+		<ThemeProvider theme={theme}>
+			<Router>
+				<Routes>
+					<Route
+						path="/"
+						element={<PrivateRoute page={<HomePage />} />}
+					/>
+					<Route path="/register" element={<RegisterPage />} />
+					<Route path="/signin" element={<SigninPage />} />
+					<Route path="*" element={<Navigate to="/" />} />
+				</Routes>
+			</Router>
+		</ThemeProvider>
+	);
+};
 
 export default App;
