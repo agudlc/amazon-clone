@@ -190,6 +190,10 @@ const SigninFormComponent: FC = () => {
 					style={{ textDecoration: "none", color: "#0000ee" }}
 				>
 					<Button
+						disabled={
+							!validatePasswordLength(password) ||
+							!validateEmail(email)
+						}
 						variant="contained"
 						style={{
 							width: "100%",
