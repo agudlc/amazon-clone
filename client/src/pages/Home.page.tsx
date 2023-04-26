@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import HeaderComponent from "../features/products/components/Header.component";
 import { useAppDispatch, useAppSelector } from "../hooks/redux/hooks";
 import ProductComponent from "../features/products/components/ProductComponent";

@@ -1,6 +1,6 @@
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import { ProductDocument } from "../models/Product";
-import { useAppDispatch } from "../../../hooks/redux/hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks/redux/hooks";
 import {
 	Card,
 	CardActions,
@@ -16,9 +16,17 @@ interface ProductComponentProps {
 }
 
 const ProductComponent: FC<ProductComponentProps> = ({ product }) => {
-	const [count, setCount] = useState(0);
-
 	const dispatch = useAppDispatch();
+
+	const { cart } = useAppSelector((state) => state.product);
+
+	let qty = 0;
+
+	const cartItem = cart.find((item) => item._id === product._id);
+
+	if (cartItem) {
+		qty = cartItem.quantity;
+	}
 
 	return (
 		<Card sx={{ width: 300, minWidth: 300 }}>
@@ -43,21 +51,16 @@ const ProductComponent: FC<ProductComponentProps> = ({ product }) => {
 			>
 				<Button
 					onClick={() => {
-						setCount((prevCount: number) => {
-							if (prevCount === 0) return 0;
-							return prevCount - 1;
-						});
 						dispatch(decrementProduct(product));
 					}}
-					disabled={count === 0}
+					disabled={qty === 0}
 					size="large"
 				>
 					-
 				</Button>
-				<span>{count}</span>
+				<span>{qty}</span>
 				<Button
 					onClick={() => {
-						setCount((prevCount: number) => prevCount + 1);
 						dispatch(incrementProduct(product));
 					}}
 					size="large"
