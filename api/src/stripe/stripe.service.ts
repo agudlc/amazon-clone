@@ -20,7 +20,7 @@ export class StripeService {
       0,
     );
     return this.stripe.paymentIntents.create({
-      amount: totalPrice * 100, // cents
+      amount: +totalPrice.toFixed(2) * 100, // cents
       currency: 'usd',
       payment_method_types: ['card'],
     });
